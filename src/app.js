@@ -10,10 +10,10 @@ const server = http.createServer(app)
 const app = express()
 const { Server } = require('socket.io')
 const io = require('socket.io')(server, {
-  cros: {
-    origin: '*',
-  },
+  path: '/socket.io',
+  transports: ['websocket'],
 })
+let user = []
 
 app.use(cros())
 app.use(express.json())
@@ -32,7 +32,28 @@ app.use(
 io.on('connection', (socket) => {
   console.log('a user connected')
 
-  io.emit('login', 'sex')
+  socket.on('a', function (data) {
+    user.push(data.username)
+
+    // socket.username = data.username
+
+    //socket.broadcast.emit('out', 'test')
+    socket.emit('out', { test: 'test' })
+  })
+
+  socket.on('vector', function (data) {
+    // socket.broadcast.emit('vector', data)
+  })
+
+  socket.on('disconnect', () => {
+    //console.log(socket.username)
+    console.log('a')
+
+    socket.broadcast.emit('out', {
+      outUser: user,
+      status: user.length,
+    })
+  })
 })
 
 server.listen(8400, () => {
